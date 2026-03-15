@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Drishti AI — Vision Beyond Sight</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js"></script>
+<style>
+  :root {
+    --bg: #020408;
+    --surface: #080d14;
+    --accent: #00f0ff;
+    --accent2: #7b2fff;
+    --warn: #ff4f1f;
+    --text: #e8eef8;
+    --muted: #4a5a72;
+    --glow: 0 0 40px rgba(0,240,255,0.25);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 3rem;
+    backdrop-filter: blur(18px);
+    background: rgba(2,4,8,0.7);
+    border-bottom: 1px solid rgba(0,240,255,0.08);
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 1.4rem;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .logo span { color: var(--warn); -webkit-text-fill-color: var(--warn); }
+  nav ul { list-style: none; display: flex; gap: 2rem; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 0.75rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    transition: color 0.2s; }
+  nav a:hover { color: var(--accent); }
+
+  /* ── HERO ── */
+  #hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 0 3rem;
+    overflow: hidden;
+  }
+
+  spline-viewer {
+    position: absolute;
+    top: 0; right: -5%;
+    width: 65%; height: 100%;
+    z-index: 0;
+    opacity: 0.92;
+  }
+
+  .hero-content {
+    position: relative; z-index: 2;
+    max-width: 520px;
+  }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.35rem 0.9rem;
+    border: 1px solid rgba(0,240,255,0.3);
+    border-radius: 99px;
+    font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1.8rem;
+    background: rgba(0,240,255,0.05);
+    animation: fadeUp 0.8s ease both;
+  }
+  .pill::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.5s infinite;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    font-weight: 800; line-height: 1;
+    letter-spacing: -0.03em;
+    animation: fadeUp 0.8s 0.15s ease both;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+  h1 .warn { color: var(--warn); }
+
+  .tagline {
+    margin-top: 1.5rem; margin-bottom: 2.5rem;
+    color: var(--muted); font-size: 0.9rem; line-height: 1.7;
+    max-width: 420px;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .cta-row {
+    display: flex; gap: 1rem; flex-wrap: wrap;
+    animation: fadeUp 0.8s 0.45s ease both;
+  }
+  .btn {
+    padding: 0.85rem 2rem; font-family: 'Space Mono', monospace;
+    font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase;
+    border: none; cursor: pointer; border-radius: 4px;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--accent); color: #000;
+    box-shadow: 0 0 30px rgba(0,240,255,0.4);
+  }
+  .btn-primary:hover { box-shadow: 0 0 50px rgba(0,240,255,0.7); transform: translateY(-2px); }
+  .btn-ghost {
+    background: transparent; color: var(--text);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+  /* floating particles */
+  .particles {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute; border-radius: 50%;
+    background: var(--accent);
+    animation: float linear infinite;
+    opacity: 0;
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    position: relative; z-index: 3;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: rgba(0,240,255,0.06);
+    border-top: 1px solid rgba(0,240,255,0.1);
+    border-bottom: 1px solid rgba(0,240,255,0.1);
+  }
+  .stat {
+    padding: 1.8rem 2.5rem;
+    background: var(--bg);
+  }
+  .stat-num {
+    font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800;
+    color: var(--accent); line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-top: 0.4rem;
+  }
+
+  /* ── SECTION BASE ── */
+  section { padding: 7rem 3rem; }
+  .section-tag {
+    font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif; font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 800; letter-spacing: -0.02em; line-height: 1.05;
+    max-width: 600px;
+  }
+  .section-title em { font-style: normal; color: var(--accent); }
+
+  /* ── FEATURES ── */
+  #features { background: var(--surface); }
+  .features-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5px; margin-top: 4rem;
+    background: rgba(0,240,255,0.06);
+  }
+  .feature-card {
+    background: var(--surface);
+    padding: 2.5rem;
+    transition: background 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .feature-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+  }
+  .feature-card:hover::before { transform: translateX(100%); }
+  .feature-card:hover { background: rgba(0,240,255,0.04); }
+  .feature-icon {
+    font-size: 2rem; margin-bottom: 1.2rem;
+    filter: drop-shadow(0 0 8px var(--accent));
+  }
+  .feature-title {
+    font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700;
+    margin-bottom: 0.7rem;
+  }
+  .feature-desc { color: var(--muted); font-size: 0.82rem; line-height: 1.7; }
+
+  /* ── VOICE DEMO ── */
+  #demo { background: var(--bg); }
+  .demo-container {
+    margin-top: 4rem;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;
+    align-items: start;
+  }
+  .sign-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;
+  }
+  .sign-btn {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 1rem 0.5rem;
+    cursor: pointer; text-align: center;
+    transition: all 0.2s; font-family: 'Space Mono', monospace;
+    color: var(--text);
+  }
+  .sign-btn:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(0,240,255,0.15);
+    transform: translateY(-3px);
+  }
+  .sign-btn.active {
+    border-color: var(--accent); background: rgba(0,240,255,0.08);
+    box-shadow: var(--glow);
+  }
+  .sign-icon { font-size: 1.8rem; display: block; margin-bottom: 0.4rem; }
+  .sign-label { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.05em; }
+
+  .voice-panel {
+    background: var(--surface);
+    border: 1px solid rgba(0,240,255,0.1);
+    border-radius: 12px;
+    padding: 2.5rem;
+    position: sticky; top: 100px;
+  }
+  .voice-status {
+    display: flex; align-items: center; gap: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+  .voice-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s;
+  }
+  .voice-dot.speaking { background: var(--accent); animation: pulse 0.6s infinite; }
+  .voice-status-text { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; }
+
+  .detected-sign {
+    font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800;
+    color: var(--accent); min-height: 3rem;
+    margin-bottom: 1rem; transition: all 0.3s;
+  }
+  .voice-message {
+    font-size: 0.82rem; color: var(--muted); line-height: 1.7;
+    background: rgba(0,240,255,0.04);
+    border-left: 2px solid var(--accent);
+    padding: 0.8rem 1rem; border-radius: 0 4px 4px 0;
+    min-height: 3rem; margin-bottom: 1.5rem;
+    transition: all 0.3s;
+  }
+  .speak-btn {
+    width: 100%; padding: 1rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 6px; cursor: pointer;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem;
+    color: #000; letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+  .speak-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,240,255,0.3); }
+  .speak-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .lang-row {
+    display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;
+  }
+  .lang-chip {
+    padding: 0.3rem 0.8rem; border-radius: 99px; font-size: 0.65rem;
+    letter-spacing: 0.08em; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.1); color: var(--muted);
+    background: transparent; font-family: 'Space Mono', monospace;
+    transition: all 0.2s;
+  }
+  .lang-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(0,240,255,0.08); }
+  .lang-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── ARCH ── */
+  #arch { background: var(--surface); }
+  .arch-flow {
+    display: flex; align-items: center; gap: 0;
+    margin-top: 4rem; overflow-x: auto; padding-bottom: 1rem;
+  }
+  .arch-node {
+    flex-shrink: 0;
+    background: var(--bg);
+    border: 1px solid rgba(0,240,255,0.15);
+    border-radius: 10px;
+    padding: 1.5rem 1.8rem; text-align: center;
+    min-width: 140px;
+  }
+  .arch-node-icon { font-size: 1.8rem; margin-bottom: 0.6rem; }
+  .arch-node-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem; color: var(--accent); }
+  .arch-node-sub { font-size: 0.65rem; color: var(--muted); margin-top: 0.2rem; }
+  .arch-arrow {
+    flex-shrink: 0; width: 50px; text-align: center;
+    font-size: 1.2rem; color: var(--accent); opacity: 0.5;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--bg);
+    border-top: 1px solid rgba(0,240,255,0.08);
+    padding: 3rem;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 1rem;
+  }
+  .footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  footer p { color: var(--muted); font-size: 0.72rem; }
+
+  /* ── KEYFRAMES ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.85); }
+  }
+  @keyframes float {
+    0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.3; }
+    100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+  }
+  @keyframes scanline {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+
+  /* scanline overlay on hero */
+  #hero::after {
+    content: '';
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      rgba(0,0,0,0.08) 3px,
+      rgba(0,0,0,0.08) 4px
+    );
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    nav ul { display: none; }
+    #hero { padding: 6rem 1.5rem 3rem; }
+    spline-viewer { width: 100%; right: 0; opacity: 0.3; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    section { padding: 4rem 1.5rem; }
+    .demo-container { grid-template-columns: 1fr; }
+    .arch-flow { gap: 0; }
+    footer { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Drishti<span>.</span>AI</div>
+  <ul>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#demo">Demo</a></li>
+    <li><a href="#arch">Architecture</a></li>
+  </ul>
+  <a href="#demo" class="btn btn-primary" style="padding:0.55rem 1.3rem;font-size:0.72rem;">Try Demo</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <!-- Spline 3D — floating eye/orb scene -->
+  <spline-viewer url="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode"></spline-viewer>
+
+  <!-- Floating particles -->
+  <div class="particles" id="particles"></div>
+
+  <div class="hero-content">
+    <div class="pill">Assistive Vision System</div>
+    <h1>See the<br/><em>World</em><br/>Again<span class="warn">.</span></h1>
+    <p class="tagline">
+      Real-time object detection, traffic sign recognition & voice guidance — 
+      powered by YOLOv8 on the edge. Built for the visually impaired.
+    </p>
+    <div class="cta-row">
+      <a href="#demo" class="btn btn-primary">Hear It Live</a>
+      <a href="#arch" class="btn btn-ghost">Architecture →</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-num">91.9%</div>
+    <div class="stat-label">mAP50 Accuracy</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">2.4ms</div>
+    <div class="stat-label">Inference Speed</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">15</div>
+    <div class="stat-label">Sign Classes</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">T4 GPU</div>
+    <div class="stat-label">CUDA Accelerated</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-tag">// Capabilities</div>
+  <h2 class="section-title">AI that <em>speaks</em> the road</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">👁️</div>
+      <div class="feature-title">Real-Time Detection</div>
+      <p class="feature-desc">YOLOv8n runs at inference time of 2.4ms per frame, detecting traffic signs, obstacles, and hazards with 91.9% mAP50 accuracy.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔊</div>
+      <div class="feature-title">Voice Announcements</div>
+      <p class="feature-desc">Every detected sign triggers an instant spoken alert — "Speed Limit 60 ahead", "Red Light detected" — keeping users informed without a screen.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📖</div>
+      <div class="feature-title">OCR Text Reading</div>
+      <p class="feature-desc">PaddleOCR reads shop signs, labels, and text in the scene. Results are spoken aloud with regional language support including Hindi & Marathi.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <div class="feature-title">Multilingual Support</div>
+      <p class="feature-desc">Regional language voice output — English, Hindi, Marathi — making it accessible to India's diverse population, a key differentiator.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-title">Multi-Threaded Pipeline</div>
+      <p class="feature-desc">Parallel threads for capture, YOLO inference, OCR, and voice — ensuring no blocking and smooth real-time performance on edge devices.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📡</div>
+      <div class="feature-title">WebSocket Streaming</div>
+      <p class="feature-desc">FastAPI + WebSocket backend streams detection results in real-time to any connected device — phone, earpiece, or wearable.</p>
+    </div>
+  </div>
+</section>
+
+<!-- VOICE DEMO -->
+<section id="demo">
+  <div class="section-tag">// Interactive Demo</div>
+  <h2 class="section-title">Click a sign.<br/>Hear <em>Drishti</em> speak.</h2>
+  <div class="demo-container">
+    <div>
+      <p style="color:var(--muted);font-size:0.8rem;margin-bottom:1.5rem;line-height:1.7;">
+        Simulate what a visually impaired user hears when Drishti AI detects a traffic sign in real-time. Select language below, then click any sign.
+      </p>
+      <div class="sign-grid" id="signGrid"></div>
+    </div>
+    <div class="voice-panel">
+      <div class="voice-status">
+        <div class="voice-dot" id="voiceDot"></div>
+        <span class="voice-status-text" id="voiceStatusText">READY — SELECT A SIGN</span>
+      </div>
+      <div class="detected-sign" id="detectedSign">—</div>
+      <div class="voice-message" id="voiceMessage">Voice output will appear here...</div>
+      <button class="speak-btn" id="speakBtn" disabled>🔊 Speak Again</button>
+      <div class="lang-row">
+        <button class="lang-chip active" data-lang="en-US" onclick="setLang(this)">EN</button>
+        <button class="lang-chip" data-lang="hi-IN" onclick="setLang(this)">हिं</button>
+        <button class="lang-chip" data-lang="mr-IN" onclick="setLang(this)">मर</button>
+      </div>
+      <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.06);">
+        <div style="font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem;">Live Confidence</div>
+        <div id="confBar" style="height:4px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden;">
+          <div id="confFill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width 0.4s;border-radius:99px;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:0.4rem;">
+          <span style="font-size:0.65rem;color:var(--muted)">Confidence</span>
+          <span style="font-size:0.65rem;color:var(--accent)" id="confVal">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="arch">
+  <div class="section-tag">// System Architecture</div>
+  <h2 class="section-title">How <em>Drishti</em> works</h2>
+  <div class="arch-flow">
+    <div class="arch-node">
+      <div class="arch-node-icon">📷</div>
+      <div class="arch-node-name">Camera</div>
+      <div class="arch-node-sub">Capture Thread</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">
+      <div class="arch-node-icon">🧠</div>
+      <div class="arch-node-name">YOLOv8n</div>
+      <div class="arch-node-sub">Detection Thread</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">
+      <div class="arch-node-icon">📖</div>
+      <div class="arch-node-name">PaddleOCR</div>
+      <div class="arch-node-sub">OCR Thread</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">
+      <div class="arch-node-icon">📡</div>
+      <div class="arch-node-name">FastAPI</div>
+      <div class="arch-node-sub">WebSocket</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">
+      <div class="arch-node-icon">🔊</div>
+      <div class="arch-node-name">TTS Engine</div>
+      <div class="arch-node-sub">Voice Thread</div>
+    </div>
+  </div>
+
+  <div style="margin-top:3rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;">
+    <div style="background:var(--bg);border:1px solid rgba(0,240,255,0.1);border-radius:8px;padding:1.5rem;">
+      <div style="font-size:0.68rem;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem;">Model</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;">YOLOv8n · 8.3.0</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem;">2.69M params · 6.8 GFLOPs</div>
+    </div>
+    <div style="background:var(--bg);border:1px solid rgba(0,240,255,0.1);border-radius:8px;padding:1.5rem;">
+      <div style="font-size:0.68rem;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem;">Dataset</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;">Self-Driving Cars v6</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem;">3530 train · 801 val · 15 classes</div>
+    </div>
+    <div style="background:var(--bg);border:1px solid rgba(0,240,255,0.1);border-radius:8px;padding:1.5rem;">
+      <div style="font-size:0.68rem;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem;">Training</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;">Tesla T4 · CUDA</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem;">15 epochs · 0.29 hours · AMP</div>
+    </div>
+    <div style="background:var(--bg);border:1px solid rgba(0,240,255,0.1);border-radius:8px;padding:1.5rem;">
+      <div style="font-size:0.68rem;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem;">Optimizer</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;">AdamW</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem;">lr=0.000526 · momentum=0.9</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Drishti.AI</div>
+  <p>Built with YOLOv8 · FastAPI · PaddleOCR · WebSocket</p>
+  <p style="color:var(--muted);">© 2026 · MIT AOE Alandi</p>
+</footer>
+
+<script>
+// ── SIGNS DATA ──
+const signs = [
+  { icon: '🔴', label: 'Red Light',    conf: 0.87,
+    messages: { 'en-US': 'Red light detected. Please stop immediately.',
+                'hi-IN': 'लाल बत्ती है। कृपया रुकें।',
+                'mr-IN': 'लाल दिवा आहे. कृपया थांबा.' }},
+  { icon: '🟢', label: 'Green Light',  conf: 0.77,
+    messages: { 'en-US': 'Green light. Safe to proceed.',
+                'hi-IN': 'हरी बत्ती है। आगे बढ़ें।',
+                'mr-IN': 'हिरवा दिवा. पुढे जा.' }},
+  { icon: '🛑', label: 'Stop Sign',    conf: 0.94,
+    messages: { 'en-US': 'Stop sign ahead. Come to a complete stop.',
+                'hi-IN': 'आगे रुकने का चिह्न है। पूरी तरह रुकें।',
+                'mr-IN': 'पुढे थांबण्याचे चिन्ह आहे.' }},
+  { icon: '2️⃣0️⃣', label: 'Speed 20',   conf: 0.98,
+    messages: { 'en-US': 'Speed limit 20 kilometres per hour.',
+                'hi-IN': 'गति सीमा 20 किलोमीटर प्रति घंटा।',
+                'mr-IN': 'वेग मर्यादा 20 किलोमीटर.' }},
+  { icon: '3️⃣0️⃣', label: 'Speed 30',   conf: 0.97,
+    messages: { 'en-US': 'Speed limit 30 kilometres per hour.',
+                'hi-IN': 'गति सीमा 30 किलोमीटर।',
+                'mr-IN': 'वेग मर्यादा 30 किलोमीटर.' }},
+  { icon: '4️⃣0️⃣', label: 'Speed 40',   conf: 0.96,
+    messages: { 'en-US': 'Speed limit 40 kilometres per hour.',
+                'hi-IN': 'गति सीमा 40 किलोमीटर।',
+                'mr-IN': 'वेग मर्यादा 40 किलोमीटर.' }},
+  { icon: '5️⃣0️⃣', label: 'Speed 50',   conf: 0.94,
+    messages: { 'en-US': 'Speed limit 50 kilometres per hour.',
+                'hi-IN': 'गति सीमा 50 किलोमीटर।',
+                'mr-IN': 'वेग मर्यादा 50 किलोमीटर.' }},
+  { icon: '6️⃣0️⃣', label: 'Speed 60',   conf: 0.93,
+    messages: { 'en-US': 'Speed limit 60 kilometres per hour.',
+                'hi-IN': 'गति सीमा 60 किलोमीटर।',
+                'mr-IN': 'वेग मर्यादा 60 किलोमीटर.' }},
+  { icon: '7️⃣0️⃣', label: 'Speed 70',   conf: 0.97,
+    messages: { 'en-US': 'Speed limit 70 kilometres per hour.',
+                'hi-IN': 'गति सीमा 70 किलोमीटर।',
+                'mr-IN': 'वेग मर्यादा 70 किलोमीटर.' }},
+  { icon: '8️⃣0️⃣', label: 'Speed 80',   conf: 0.95,
+    messages: { 'en-US': 'Speed limit 80 kilometres per hour.',
+                'hi-IN': 'गति सीमा 80 किलोमीटर।',
+                'mr-IN': 'वेग मर्यादा 80 किलोमीटर.' }},
+  { icon: '9️⃣0️⃣', label: 'Speed 90',   conf: 0.82,
+    messages: { 'en-US': 'Speed limit 90 kilometres per hour.',
+                'hi-IN': 'गति सीमा 90 किलोमीटर।',
+                'mr-IN': 'वेग मर्यादा 90 किलोमीटर.' }},
+  { icon: '💯', label: 'Speed 100',  conf: 0.95,
+    messages: { 'en-US': 'Speed limit 100 kilometres per hour.',
+                'hi-IN': 'गति सीमा 100 किलोमीटर।',
+                'mr-IN': 'वेग मर्यादा 100 किलोमीटर.' }},
+  { icon: '🔢', label: 'Speed 110',  conf: 0.85,
+    messages: { 'en-US': 'Speed limit 110 kilometres per hour.',
+                'hi-IN': 'गति सीमा 110 किलोमीटर।',
+                'mr-IN': 'वेग मर्यादा 110 किलोमीटर.' }},
+  { icon: '🔟', label: 'Speed 120',  conf: 0.98,
+    messages: { 'en-US': 'Speed limit 120 kilometres per hour.',
+                'hi-IN': 'गति सीमा 120 किलोमीटर।',
+                'mr-IN': 'वेग मर्यादा 120 किलोमीटर.' }},
+];
+
+let currentLang = 'en-US';
+let currentSign = null;
+let synth = window.speechSynthesis;
+
+// Build sign grid
+const grid = document.getElementById('signGrid');
+signs.forEach((s, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'sign-btn';
+  btn.innerHTML = `<span class="sign-icon">${s.icon}</span><span class="sign-label">${s.label}</span>`;
+  btn.onclick = () => selectSign(s, btn);
+  grid.appendChild(btn);
+});
+
+function setLang(el) {
+  document.querySelectorAll('.lang-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentLang = el.dataset.lang;
+  if (currentSign) speakSign(currentSign);
+}
+
+function selectSign(sign, btn) {
+  document.querySelectorAll('.sign-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentSign = sign;
+
+  document.getElementById('detectedSign').textContent = sign.label;
+  document.getElementById('voiceMessage').textContent = sign.messages[currentLang] || sign.messages['en-US'];
+  document.getElementById('speakBtn').disabled = false;
+
+  // confidence bar
+  const conf = sign.conf;
+  document.getElementById('confFill').style.width = (conf * 100) + '%';
+  document.getElementById('confVal').textContent = (conf * 100).toFixed(1) + '%';
+
+  speakSign(sign);
+}
+
+function speakSign(sign) {
+  if (!synth) return;
+  synth.cancel();
+
+  const msg = sign.messages[currentLang] || sign.messages['en-US'];
+  const utter = new SpeechSynthesisUtterance(msg);
+  utter.lang = currentLang;
+  utter.rate = 0.95;
+  utter.pitch = 1.05;
+
+  const dot = document.getElementById('voiceDot');
+  const statusText = document.getElementById('voiceStatusText');
+
+  utter.onstart = () => {
+    dot.classList.add('speaking');
+    statusText.textContent = 'SPEAKING...';
+  };
+  utter.onend = () => {
+    dot.classList.remove('speaking');
+    statusText.textContent = 'READY — SELECT A SIGN';
+  };
+
+  synth.speak(utter);
+}
+
+document.getElementById('speakBtn').onclick = () => {
+  if (currentSign) speakSign(currentSign);
+};
+
+// ── PARTICLES ──
+const pContainer = document.getElementById('particles');
+for (let i = 0; i < 18; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const size = Math.random() * 3 + 1;
+  p.style.cssText = `
+    width:${size}px; height:${size}px;
+    left:${Math.random()*100}%;
+    animation-duration:${Math.random()*8+6}s;
+    animation-delay:${Math.random()*8}s;
+    opacity:0;
+  `;
+  pContainer.appendChild(p);
+}
+
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.animation = 'fadeUp 0.7s ease both';
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.feature-card, .arch-node, .stat').forEach(el => {
+  el.style.opacity = '0';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
